@@ -3,7 +3,12 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- *	Population - <description goes here>
+ *	Population - the user is prompted with different options to search/sort
+ *  through a large database with the name, state, designation, and population
+ *  of cities in the United States. Depending on which option the user 
+ *  selects, the program will use either selection sort, insertion sort, or
+ *  merge sort to sort through the database to get the information that the
+ *  user wants
  *
  *	Requires FileUtils and Prompt classes.
  *
@@ -14,7 +19,7 @@ public class Population {
 	
 	// List of cities
 	private List<City> cities;
-	private int userSelection;
+	private int userSelection; // the user selection of what data/what sort they want
 	
 	// US data file
 	private final String DATA_FILE = "usPopData2017.txt";
@@ -29,6 +34,9 @@ public class Population {
 		population.runProgram();
 	}
 
+	/**
+	 * called from main and runs the entire program
+	 */
 	public void runProgram(){
 		printIntroduction();
 		readTextFile();
@@ -78,6 +86,7 @@ public class Population {
 	
 	/**	Print out the choices for population sorting */
 	public void printMenu() {
+		System.out.println();
 		System.out.println("1. Fifty least populous cities in USA (Selection Sort)");
 		System.out.println("2. Fifty most populous cities in USA (Merge Sort)");
 		System.out.println("3. First fifty cities sorted by name (Insertion Sort)");
@@ -87,21 +96,13 @@ public class Population {
 		System.out.println("9. Quit");
 	}
 
+	/**
+	 * uses the FileUtils class to read in all the data from the text file
+	 */
 	public void readTextFile(){
 		Scanner reader = FileUtils.openToRead(DATA_FILE);
 		reader.useDelimiter("\t|\n");
 		while(reader.hasNext()){
-			//String line = reader.next();
-			//System.out.println(line + "\n");
-
-//			String state = line.substring(0, line.indexOf("\t"));
-//			line = line.substring(line.indexOf("\t")).trim();
-//			String name = line.substring(0, line.indexOf("\t"));
-//			line = line.substring(line.indexOf("\t")).trim();
-//			String designation = line.substring(0, line.indexOf("\t"));
-//			line = line.substring(line.indexOf("\t")).trim();
-//			int population = Integer.parseInt(line);
-
 			String state = reader.next();
 			String name = reader.next();
 			String designation = reader.next();
@@ -111,6 +112,9 @@ public class Population {
 		}
 	}
 
+	/**
+	 * uses the Prompt class to get the user selection for what choice they want
+	 */
 	public void getUserSelection(){
 		userSelection = Prompt.getInt("Enter selection");
 		while( !((userSelection>=1 && userSelection<=6) || userSelection==9) ){
@@ -119,6 +123,12 @@ public class Population {
 		System.out.println();
 	}
 
+	/**
+	 * the user is prompted to enter the name of a state to search until
+	 * a valid state is entered
+	 * 
+	 * @return 		the name of the state
+	 */
 	public String promptState(){
 		String state = Prompt.getString("Enter state name (ie Alabama)");
 		while( !isValidState(state) ){
@@ -128,6 +138,12 @@ public class Population {
 		return state;
 	}
 
+	/**
+	 * the user is prompted to enter the name of a city to search until
+	 * a valid city is entered
+	 * 
+	 * @return 		the name of the city
+	 */
 	public String promptCity(){
 		String city = Prompt.getString("Enter city name");
 		while( !isValidCity(city) ){
@@ -137,52 +153,78 @@ public class Population {
 		return city;
 	}
 
+	/**
+	 * checks to see if the user input is of a valid state that can be 
+	 * found in the database
+	 * 
+	 * @param state 	the state name to check
+	 * @return 			true if valid name, false if not
+	 */
 	public boolean isValidState(String state){
-		ascendingNameInsertionSort();
+		sortByStateName();
+		
 		int low = 0, mid, high = cities.size()-1;
 		while(low<high){
 			mid = (low+high)/2;
+			
 			if(cities.get(mid).getState().equals(state))
 				return true;
-			else if(cities.get(mid).getState().compareTo(state) > 0)
+			else if(state.compareTo(cities.get(mid).getState()) > 0)
 				low = mid+1;
 			else
 				high = mid-1;
 		}
 		return false;
-
-		//return false;
 	}
 
+	/**
+	 * checks to see if the user input is of a valid city that can be 
+	 * found in the database
+	 * 
+	 * @param city 		the city name to check
+	 * @return 			true if valid name, false if not
+	 */
 	public boolean isValidCity(String city){
-//		descendingNameMergeSort();
-//		int low = 0, mid, high = cities.size()-1;
-//		while(low<high){
-//			mid = (low+high)/2;
-//			if(cities.get(mid).getName().equals(city))
-//				return true;
-//			else if(cities.get(mid).getName().compareTo(city) > 0)
-//				low = mid+1;
-//			else
-//				high = mid-1;
-//		}
-//		return false;
-
+		descendingNameMergeSort();
+		
+		int low = 0, mid, high = cities.size()-1;
+		while(low<high){
+			mid = (low+high)/2;
+			
+			if(cities.get(mid).getName().equals(city))
+				return true;
+			else if(cities.get(mid).getName().compareTo(city) > 0)
+				low = mid+1;
+			else
+				high = mid-1;
+		}
 		return false;
 	}
-
+	
+	/**
+	 * prints the option the user selects along with a heading for the data
+	 * 
+	 * @param location 		if the selection the user chose requires them to 
+	 * 						input an location
+	 */
 	public void printResultHeading(String location){
 		switch(userSelection){
 			case 1: System.out.println("Fifty least populous cities"); break;
 			case 2: System.out.println("Fifty most populous cities"); break;
 			case 3: System.out.println("Fifty cities sorted by name"); break;
 			case 4: System.out.println("Fifty cities sorted by name descending"); break;
-			case 5: System.out.println("Fifty most populous cities in " + location); break;
-			case 6: System.out.println("City " + location + " by population"); break;
+			case 5: System.out.println("\nFifty most populous cities in " + location); break;
+			case 6: System.out.println("\nCity " + location + " by population"); break;
 		}
 		System.out.printf("%4s %-23s%-23s%-13s%13s\n", "", "State", "City", "Type", "Population");
 	}
 
+	/**
+	 * prints the result of the sorted data
+	 * 
+	 * @param cityList 		if the sorted data is in a separate list and 
+	 * 						not stored as a field
+	 */
 	public void printResults(List<City> cityList){
 		if(userSelection<5){
 			for(int i = 0; i<50; i++){
@@ -200,17 +242,28 @@ public class Population {
 			}
 		}
 	}
-
+	
+	/**
+	 * prints the time in milliseconds it takes to complete a sort
+	 * 
+	 * @param time 		the time in milliseconds
+	 */
 	public void printElapsedTime(long time){
-		System.out.println("Elapsed Time " + time + " milliseconds\n");
-	}
-
-	public void printEndMessage(){
-		System.out.println("Thanks for using Population!");
+		System.out.println("\nElapsed Time " + time + " milliseconds\n");
 	}
 
 	/**
-	 * selection sort population
+	 * prints the end message at the end of the program
+	 */
+	public void printEndMessage(){
+		System.out.println("Thanks for using Population!\n\n\n");
+	}
+
+	/**
+	 * uses selection sort to sort the list of cities by population in 
+	 * ascending order
+	 * 
+	 * @return 	the time it takes to complete the sort in milliseconds
 	 */
 	public long ascendingPopSelectionSort(){
 		long startMillisec = System.currentTimeMillis();
@@ -227,7 +280,12 @@ public class Population {
 		return endMillisec-startMillisec;
 	}
 
-	// name order
+	/**
+	 * uses insertion sort to sort the list of cities by name in 
+	 * ascending order
+	 * 
+	 * @return the time it takes to complete the sort in milliseconds
+	 */
 	public long ascendingNameInsertionSort(){
 		long startMillisec = System.currentTimeMillis();
 		for(int outer = 1; outer<cities.size(); outer++){
@@ -239,9 +297,22 @@ public class Population {
 		long endMillisec = System.currentTimeMillis();
 		return endMillisec-startMillisec;
 	}
+	
+	/**
+	 * uses insertion sort to sort the list of cities by their state name
+	 * in ascending order
+	 */
+	public void sortByStateName(){
+		for(int outer = 1; outer<cities.size(); outer++){
+			for(int inner = outer; inner>0; inner--){
+				if(cities.get(inner).getState().compareTo(cities.get(inner-1).getState()) < 0)
+					swap(cities, inner, inner-1);
+			}
+		}
+	}
 
 	/**
-	 *	Swaps two Integer objects in array arr
+	 *	Swaps two City objects in list cities
 	 * 	@param cities 	the list of cities to swap
 	 *	@param x		index of first object to swap
 	 *	@param y		index of second object to swap
@@ -253,8 +324,10 @@ public class Population {
 	}
 
 	/**
-	 *	merge sort in descending order by population
-	 *  @return   			the sorted list
+	 *	uses merge sort in descending order to sort the list of cities
+	 *  by population
+	 * 
+	 *  @return    the time it takes to complete the sort in milliseconds
 	 */
 	public long descendingPopMergeSort() {
 		long startMillisec = System.currentTimeMillis();
@@ -269,10 +342,11 @@ public class Population {
 	}
 
 	/**
-	 * recursively split the array for merge sort
+	 * recursively split the arraylist for merge sort
+	 * 
 	 * @param begIndex	the beginning index of one side of the split
 	 * @param endIndex	the end index of ond side of the split
-	 * @param sorted	the sorted array
+	 * @param sorted	the sorted list
 	 */
 	private void recursivePopSplit(int begIndex, int endIndex, List<City> sorted){
 		if(endIndex-begIndex < 2){
@@ -289,49 +363,51 @@ public class Population {
 	}
 
 	/**
-	 * merges the elements of the split array so that it becomes sorted
-	 * @param start		the start index of the array
-	 * @param middle	the middle index of the array
-	 * @param end		the end index of the array
-	 * @param sorted	the sorted array
+	 * merges the elements of the split arraylist so that it becomes sorted
+	 * @param start		the start index of the arraylist
+	 * @param middle	the middle index of the arraylist
+	 * @param end		the end index of the arraylist
+	 * @param sorted	the sorted arraylist
 	 */
 	private void mergePopElements(int start, int middle, int end, List<City> sorted){
 		int i = start;
 		int j = middle+1;
-		int k = start;
+		int n = start;
 
 		while(i<=middle && j<=end){
 			if(cities.get(i).compareTo(cities.get(j)) > 0){
-				sorted.set(k, cities.get(i));
+				sorted.set(n, cities.get(i));
 				i++;
 			}
 			else{
-				sorted.set(k, cities.get(j));
+				sorted.set(n, cities.get(j));
 				j++;
 			}
-			k++;
+			n++;
 		}
 
 		while(i <= middle){
-			sorted.set(k, cities.get(i));
-			k++;
+			sorted.set(n, cities.get(i));
+			n++;
 			i++;
 		}
 
 		while(j <= end){
-			sorted.set(k, cities.get(j));
-			k++;
+			sorted.set(n, cities.get(j));
+			n++;
 			j++;
 		}
 
-		for(k=start; k<=end; k++){
-			cities.set(k, sorted.get(k));
+		for(int m = start; m<=end; m++){
+			cities.set(m, sorted.get(m));
 		}
 	}
 
 	/**
-	 *	merge sort in descending order by population
-	 *  @return   			the sorted list
+	 *	uses merge sort to sor the list of cities in descending order 
+	 *  by population
+	 * 
+	 *  @return 	the time in milliseconds it takes to sort the list
 	 */
 	public long descendingNameMergeSort() {
 		long startMillisec = System.currentTimeMillis();
@@ -346,10 +422,10 @@ public class Population {
 	}
 
 	/**
-	 * recursively split the array for merge sort
+	 * recursively split the arraylist for merge sort
 	 * @param begIndex	the beginning index of one side of the split
 	 * @param endIndex	the end index of ond side of the split
-	 * @param sorted	the sorted array
+	 * @param sorted	the sorted list
 	 */
 	private void recursiveNameSplit(int begIndex, int endIndex, List<City> sorted){
 		if(endIndex-begIndex < 2){
@@ -366,47 +442,52 @@ public class Population {
 	}
 
 	/**
-	 * merges the elements of the split array so that it becomes sorted
-	 * @param start		the start index of the array
-	 * @param middle	the middle index of the array
-	 * @param end		the end index of the array
-	 * @param sorted	the sorted array
+	 * merges the elements of the split arraylist so that it becomes sorted
+	 * @param start		the start index of the arraylist
+	 * @param middle	the middle index of the arraylist
+	 * @param end		the end index of the arraylist
+	 * @param sorted	the sorted arraylist
 	 */
 	private void mergeNameElements(int start, int middle, int end, List<City> sorted){
 		int i = start;
 		int j = middle+1;
-		int k = start;
+		int n = start;
 
 		while(i<=middle && j<=end){
 			if(cities.get(i).getName().compareTo(cities.get(j).getName()) > 0){
-				sorted.set(k, cities.get(i));
+				sorted.set(n, cities.get(i));
 				i++;
 			}
 			else{
-				sorted.set(k, cities.get(j));
+				sorted.set(n, cities.get(j));
 				j++;
 			}
-			k++;
+			n++;
 		}
 
 		while(i <= middle){
-			sorted.set(k, cities.get(i));
-			k++;
+			sorted.set(n, cities.get(i));
+			n++;
 			i++;
 		}
 
 		while(j <= end){
-			sorted.set(k, cities.get(j));
-			k++;
+			sorted.set(n, cities.get(j));
+			n++;
 			j++;
 		}
 
-		for(k=start; k<=end; k++){
-			cities.set(k, sorted.get(k));
+		for(int m = start; m<=end; m++){
+			cities.set(m, sorted.get(m));
 		}
 	}
 
-	// descending insertion
+	/**
+	 * uses insertion sort to sort the population of cities of a specified state
+	 * 
+	 * @param state 	the state to sort the population
+	 * @return 			the list of sorted cities by population for one state
+	 */
 	public List<City> sortPopByState(String state){
 		List<City> oneStateOnly = new ArrayList<City>();
 		for(int i = 0; i<cities.size(); i++){
@@ -415,14 +496,17 @@ public class Population {
 		}
 		for(int outer = 1; outer<oneStateOnly.size(); outer++){
 			for(int inner = outer; inner>0; inner--){
-				if(oneStateOnly.get(inner).getName().compareTo(oneStateOnly.get(inner-1).getName()) > 0)
+				if(oneStateOnly.get(inner).compareTo(oneStateOnly.get(inner-1)) > 0)
 					swap(oneStateOnly, inner, inner-1);
 			}
 		}
 		return oneStateOnly;
 	}
 
-	// insertion descending
+	/**
+	 * uses insertion sort to sort the population of cities with the same
+	 * specified name
+	 */
 	public List<City> sortPopByCityName(String cityName){
 		List<City> oneCityOnly = new ArrayList<City>();
 		for(int i = 0; i<cities.size(); i++){
@@ -440,7 +524,7 @@ public class Population {
 	}
 
 	/**
-	 * prints the total number of cities in teh database
+	 * prints the total number of cities in the database
 	 */
 	public void printTotalCities(){
 		System.out.println(cities.size() + " cities in database.");
