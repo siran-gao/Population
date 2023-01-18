@@ -161,8 +161,8 @@ public class Population {
 	 * @return 			true if valid name, false if not
 	 */
 	public boolean isValidState(String state){
-		sortByStateName();
-		
+    ascendingStateMergeSort();
+	
 		int low = 0, mid, high = cities.size()-1;
 		while(low<high){
 			mid = (low+high)/2;
@@ -232,7 +232,11 @@ public class Population {
 			}
 		}
 		else if(userSelection==5){
-			for(int i = 0; i<50; i++){
+      int loop = 50;
+      if(cityList.size() < 50)
+        loop = cityList.size();
+        
+			for(int i = 0; i<loop; i++){
 				System.out.printf("%4s %s\n", ((i+1)+":"), cityList.get(i).toString());
 			}
 		}
@@ -311,6 +315,80 @@ public class Population {
 		}
 	}
 
+  /**
+	 *	uses merge sort to sort the list of cities in ascending order 
+	 *  by state name
+	 */
+	public void ascendingStateMergeSort() {
+		int n = cities.size();
+		List<City> sorted = new ArrayList<>();
+		for(int i = 0; i<n; i++){
+			sorted.add(new City("","","",0));
+		}
+		recursiveStateSplit(0, n-1, sorted);
+	}
+
+	/**
+	 * recursively split the arraylist for merge sort
+	 * @param begIndex	the beginning index of one side of the split
+	 * @param endIndex	the end index of ond side of the split
+	 * @param sorted	the sorted list
+	 */
+	private void recursiveStateSplit(int begIndex, int endIndex, List<City> sorted){
+		if(endIndex-begIndex < 2){
+			if(endIndex > begIndex &&
+					cities.get(endIndex).getState().compareTo(cities.get(begIndex).getState()) < 0)
+				swap(cities, begIndex, endIndex);
+		}
+		else{
+			int middle = (begIndex+endIndex)/2;
+			recursiveStateSplit(begIndex, middle, sorted);
+			recursiveStateSplit(middle+1, endIndex, sorted);
+			mergeStateElements(begIndex, middle, endIndex, sorted);
+		}
+	}
+
+	/**
+	 * merges the elements of the split arraylist so that it becomes sorted
+	 * @param start		the start index of the arraylist
+	 * @param middle	the middle index of the arraylist
+	 * @param end		the end index of the arraylist
+	 * @param sorted	the sorted arraylist
+	 */
+	private void mergeStateElements(int start, int middle, int end, List<City> sorted){
+		int i = start;
+		int j = middle+1;
+		int n = start;
+
+		while(i<=middle && j<=end){
+			if(cities.get(i).getState().compareTo(cities.get(j).getState()) < 0){
+				sorted.set(n, cities.get(i));
+				i++;
+			}
+			else{
+				sorted.set(n, cities.get(j));
+				j++;
+			}
+			n++;
+		}
+
+		while(i <= middle){
+			sorted.set(n, cities.get(i));
+			n++;
+			i++;
+		}
+
+		while(j <= end){
+			sorted.set(n, cities.get(j));
+			n++;
+			j++;
+		}
+
+		for(int m = start; m<=end; m++){
+			cities.set(m, sorted.get(m));
+		}
+	}
+  
 	/**
 	 *	Swaps two City objects in list cities
 	 * 	@param cities 	the list of cities to swap
